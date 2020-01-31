@@ -37,9 +37,7 @@ return [
 
         'sqlite' => [
             'driver' => 'sqlite',
-            'url' => env('DATABASE_URL'),
-            'database' => env('DB_DATABASE', database_path('database.sqlite')),
-            'prefix' => '',
+            'database' => '../storage/db.sqlite',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
 
