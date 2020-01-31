@@ -1,0 +1,40 @@
+version: '2'
+services:
+  db:
+    image: mariadb:5.5
+    volumes:
+      - aycdev:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: root
+    ports:
+      - "3306:3306"
+
+  myadmin:
+    links:
+      - db
+    image: phpmyadmin/phpmyadmin
+    environment:
+          UPLOAD_SIZE: 1G
+    ports:
+      - "8080:80"
+
+  webserver:
+    build: .
+    image: webdevops/php-apache-dev
+    links:
+      - db
+    volumes:
+      - .:/app
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      WEB_DOCUMENT_ROOT: /app/public/
+      PHP_DEBUGGER: xdebug
+      XDEBUG_REMOTE_HOST: 10.0.0.225
+      XDEBUG_REMOTE_PORT: 9000
+      XDEBUG_REMOTE_AUTOSTART: 0
+      XDEBUG_REMOTE_CONNECT_BACK: 0
+volumes:
+  aycdev:
