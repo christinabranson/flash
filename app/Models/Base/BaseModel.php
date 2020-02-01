@@ -156,6 +156,15 @@ class BaseModel extends Model {
 
     }
 
+    public function getValues() {
+        $output = [];
+        $output["id"] = $this->id;
+        foreach ($this->fillable as $key) {
+            $output[$key] = $this->$key;
+        }
+        return $output;
+    }
+
     public function setValues($data) {
         $this->fill($data);
 
@@ -319,7 +328,7 @@ class BaseModel extends Model {
                             if (isset($data[$attributeName]) && isset($data[$attributeName][$i])) {
                                 $dataRow[$attribute_group_attribute] = $data[$attributeName][$i];
                             } else {
-                                $dataRow[$attribute_group_attribute] = null;
+                                $dataRow[$attribute_group_attribute] = "";
                             }
                         }
 
@@ -390,7 +399,7 @@ class BaseModel extends Model {
 
                     $childAttributeData = (array)$childAttributeData;
 
-                    $id = $childAttributeData["id"] ?: 0;
+                    $id = isset($childAttributeData["id"]) && $childAttributeData["id"] > 0 ? $childAttributeData["id"] : 0;
 
                     /** @var BaseModel $childModel */
                     $childModel = $this->{$attribute_group_name}()->firstOrNew(["id" => $id]);

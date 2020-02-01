@@ -49,7 +49,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                @if (false)
+                                @if (true)
                                 <div class="row">
                                     <label class="col-sm-2 col-form-label">{{ __('Answers') }}</label>
                                     <div class="col-sm-7">

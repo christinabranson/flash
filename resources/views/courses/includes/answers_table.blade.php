@@ -1,4 +1,4 @@
-<table id="course_sections_table" class="table">
+<table id="answer_table_{{ $question->id }}" class="table">
     <thead>
     <tr>
         <th>Answer</th>
@@ -10,9 +10,20 @@
     @php($answers = $question->exists ? $question->getChildAttributes("answers") : [])
     @if(count($answers))
         @foreach($answers as $answer)
-            <tr class="tr_clone" data-tr_question_id="{{ $answer->id }}">
+            <tr class="tr_clone" data-tr_answer_id="{{ $answer->id }}">
+                <input type="hidden" name="answers_question_id[]" value="{{ $question->id }}" />
+                <input type="hidden" name="answers_id[]" value="{{ $answer->id }}" />
                 <td><span class="answer"><input name="answers_answer[]" value="{{ $answer->answer }}" /></span></td>
-                <td><span class="is_correct">{{ $answer->is_correct }}</span></td>
+                <td>
+                <span class="is_correct">
+                    <select class="form-control" name="answers_is_correct[]">
+                        @foreach([0 => "No", 1 =>  "Yes"] as $answerInt => $answerName)
+                            @php($selected = $answer->is_correct == $answerInt ? " selected=\"selected\" " : "")
+                            <option value="{{ $answerInt }}" {{ $selected }}>{{ $answerName }}</option>
+                        @endforeach
+                    </select>
+                </span>
+                </td>
                 <td class="td-actions text-right">
                     <button type="button" rel="tooltip" class="btn btn-danger btn-modal-open" onclick="deleteThisItem(this)">
                         <i class="material-icons">delete</i>
@@ -26,9 +37,20 @@
         @php($answer->id = 0)
         @php($answer->answer = "")
         @php($answer->is_correct = 0)
-        <tr class="tr_clone" data-tr_course_section_id="{{ $answer->id }}">
+        <tr class="tr_clone" data-tr_answer_id="{{ $answer->id }}">
+            <input type="hidden" name="answers_question_id[]" value="{{ $question->id }}" />
+            <input type="hidden" name="answers_id[]" value="{{ $answer->id }}" />
             <td><span class="answer"><input name="answers_answer[]" value="{{ $answer->answer }}" /></span></td>
-            <td><span class="is_correct"></span></td>
+            <td>
+                <span class="is_correct">
+                    <select class="form-control" name="answers_is_correct[]">
+                        @foreach([0 => "No", 1 =>  "Yes"] as $answerInt => $answerName)
+                            @php($selected = $answer->is_correct == $answerInt ? " selected=\"selected\" " : "")
+                            <option value="{{ $answerInt }}" {{ $selected }}>{{ $answerName }}</option>
+                        @endforeach
+                    </select>
+                </span>
+            </td>
             <td class="td-actions text-right">
                 <button type="button" rel="tooltip" class="btn btn-danger btn-modal-open" onclick="deleteThisItem(this)">
                     <i class="material-icons">delete</i>
@@ -38,4 +60,4 @@
     @endif
     </tbody>
 </table>
-<input type="button" onclick="addAnswersTableItem()" class="btn btn-sm btn-secondary" value="+ Add Item" />
+<input type="button" onclick="addAnswersTableItem('#answer_table_{{ $question->id }}')" class="btn btn-sm btn-secondary" value="+ Add Item" />

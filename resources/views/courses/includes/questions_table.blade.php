@@ -50,4 +50,4 @@
     @endif
     </tbody>
 </table>
-<input type="button" onclick="addTableItem()" class="btn btn-sm btn-secondary" value="+ Add Item" />
+<input type="button" onclick="addTableItem('#questions_table')" class="btn btn-sm btn-secondary" value="+ Add Item" />

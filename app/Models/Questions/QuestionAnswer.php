@@ -29,6 +29,7 @@ class QuestionAnswer extends BaseModel
      * RELATIONSHIPS
      */
 
+
     public function question() {
         return $this->belongsTo('App\Models\Questions\Question');
     }

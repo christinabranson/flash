@@ -70,8 +70,6 @@
 
 <script>
 
-  var tableID = "#questions_table";
-
   function cloneModalContentsToTable(modalButtonEl) {
     var courseSectionID = modalButtonEl.data("question_id");
     console.log(courseSectionID);
@@ -101,12 +99,12 @@
     cloneModalContentsToTable(modalButtonEl)
   });
 
-  function addTableItem() {
-    var newIDNumber = getNumberOfTableRows() + 100000;
+  function addTableItem(tableID) {
+    var newIDNumber = getNumberOfTableRows(tableID) + 100000;
     console.log("new table ID with course number " + newIDNumber);
 
     // Clone the TR
-    var trElementToClone = $(".tr_clone").first();
+    var trElementToClone = $(tableID + " .tr_clone").first();
     var newTRElement = trElementToClone.clone();
 
     $(tableID).append(newTRElement);
@@ -161,10 +159,12 @@
 
     var parentTD = $(element).parent("td");
     var parentTR = $(parentTD).parent("tr");
-    var rowID = parentTR.attr("data-tr_question_id");
-    var numberOfTableRows = getNumberOfTableRows();
-
-    console.log("deleting row with rowID: " + rowID);
+    var parentTableBody = $(parentTR).parent("tbody");
+    var parentTable = $(parentTableBody).parent("table");
+    var parentTableID = "#" + $(parentTable).attr("id");
+    var numberOfTableRows = getNumberOfTableRows(parentTableID);
+    console.log(parentTableID);
+    console.log(numberOfTableRows);
 
     if (numberOfTableRows <= 1) {
       alert("The last table item cannot be deleted. Please modify this item instead of deleting it");
@@ -175,13 +175,38 @@
       parentTR.remove();
 
       // now delete the modal
-      var modalToRemove = $("#question_modal_"+rowID);
-      modalToRemove.remove();
+      //var modalToRemove = $("#question_modal_"+rowID);
+      //modalToRemove.remove();
     }
   }
 
-  function getNumberOfTableRows() {
-    return $(".tr_clone").length;
+  function getNumberOfTableRows(tableID) {
+    return $(tableID + " .tr_clone").length;
   }
+
+  /**
+   * NOW ADD FUNCTIONALITY TO HANDLE THE ANSWERS
+   */
+  function addAnswersTableItem(tableID) {
+    console.log(tableID);
+    var newIDNumber = getNumberOfTableRows(tableID) + 200000;
+    console.log("new answers table ID with course number " + newIDNumber);
+
+    // Clone the TR
+    var trElementToClone = $(tableID + " .tr_clone").first();
+    console.log(trElementToClone);
+    var newTRElement = trElementToClone.clone();
+
+    $(tableID).append(newTRElement);
+    // Update the data id on the course section
+    newTRElement.attr("data-tr_question_id", newIDNumber);
+    newTRElement.find("input[name=\"answers_id[]\"]").val(0);
+    newTRElement.find("input[name=\"answers_answer[]\"]").val("");
+    newTRElement.find("select[name=\"answers_is_correct[]\"]").val(0);
+    // Erase any existing values in description
+    // Add the updated modal target link to the edit button
+    newTRElement.find(".btn-modal-open").attr("data-target", "#question_modal_"+newIDNumber);
+  }
+
 </script>
 @endpush
