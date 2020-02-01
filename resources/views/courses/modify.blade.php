@@ -4,8 +4,12 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-12">
-          <form method="post" action="{{ route('courses.save', $model) }}" autocomplete="off" class="form-horizontal">
+          <form method="post" action="{{ route('courses.save') }}" autocomplete="off" class="form-horizontal">
             @csrf
+
+            <!-- HIDDEN VALUE FOR MODEL ID -->
+            <input name="model_id" type="hidden" value="{{$model->id}}">
+
             <div class="card ">
               <div class="card-header card-header-primary">
                 @if ($model->exists)
@@ -43,20 +47,6 @@
                     </div>
                   </div>
                 </div>
-                <div class="row">
-                  <label class="col-sm-2 col-form-label">{{ __('Split Into Sections?') }}</label>
-                  <div class="col-sm-7">
-                    <div class="form-check">
-                      <label class="form-check-label">
-                        <input class="form-check-input" type="checkbox" value="1" name="split_into_sections" @if($model->split_into_sections) checked="checked" @endif>
-                        Split
-                        <span class="form-check-sign">
-                           <span class="check"></span>
-                           </span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
 
                 <div id="sections" class="row">
                   <label class="col-sm-2 col-form-label">{{ __('Course Sections') }}</label>
@@ -89,11 +79,7 @@
 
     var tableID = "#course_sections_table";
 
-    /**
-     * On save, write the relevant values in the table
-     */
-    $('button.JS_modal_save').on('click', function () {
-      var modalButtonEl = $(this);
+    function cloneModalContentsToTable(modalButtonEl) {
       var courseSectionID = modalButtonEl.data("course_section_id");
       console.log(courseSectionID);
 
@@ -103,32 +89,80 @@
       var tableRow = $('tr[data-tr_course_section_id='+courseSectionID+']').first();
       tableRow.find("span.name").html(nameValue);
       tableRow.find("span.description").html(descriptionValue);
+
+      // if name value exists, then say the field exists
+      if (nameValue !== undefined && nameValue.length) {
+        $("#input-exists-"+courseSectionID).val(1);
+      }
+    }
+
+
+    /**
+     * On save, write the relevant values in the table
+     */
+    $('button.JS_modal_save').on('click', function () {
+      var modalButtonEl = $(this);
+      cloneModalContentsToTable(modalButtonEl)
     });
 
     function addTableItem() {
-      console.log("addTableItem");
-      console.log($(tableID));
-      var trElementToClone = $(tableID).children("tr").first();
+      var newIDNumber = getNumberOfTableRows() + 100000;
+      console.log("new table ID with course number " + newIDNumber);
+
+      // Clone the TR
+      var trElementToClone = $(".tr_clone").first();
       var newTRElement = trElementToClone.clone();
 
-      var newIDNumber = getNumberOfTableRows() + 1;
-      console.log(newIDNumber);
-      newTRElement.data("tr_id", newIDNumber);
       $(tableID).append(newTRElement);
-      //newTRElement.find(".single_payor_modal").attr("id", "course_section_modal_"+newIDNumber);
-      //newTRElement.find(".client-payor-modal-button").data("target", "#course_section_modal_"+newIDNumber);
+      // Update the data id on the course section
+      newTRElement.attr("data-tr_course_section_id", newIDNumber);
+      // Erase any existing values in name
+      newTRElement.find("span.name").html("");
+      // Erase any existing values in description
+      newTRElement.find("span.description").html("");
+      // Add the updated modal target link to the edit button
+      newTRElement.find(".btn-modal-open").attr("data-target", "#course_section_modal_"+newIDNumber);
+
+
+      // Clone the modal
+
+      var modalToClone = $(".course_section_modal").first();
+      var newModalElement = modalToClone.clone();
+
+      $(tableID).append(newModalElement);
+
+      // Clear all inputs
+      newModalElement.find("input").val("");
+      newModalElement.find("textarea").val("");
+      // Now change the IDs of all of the input elements
+      newModalElement.find("input[name=\"sections_name[]\"]").attr("id", "input-name-"+newIDNumber);
+      newModalElement.find("textarea[name=\"sections_description[]\"]").attr("id", "input-description-"+newIDNumber);
+
+      newModalElement.attr("id", "course_section_modal_"+newIDNumber);
+      newModalElement.attr("data-modal_course_section_id", newIDNumber);
+      newModalElement.find(".JS_modal_save").attr("data-course_section_id", newIDNumber);
+
+      /**
+       * On save, write the relevant values in the table
+       */
+      $('button.JS_modal_save').on('click', function () {
+        var modalButtonEl = $(this);
+        cloneModalContentsToTable(modalButtonEl)
+      });
     }
 
     // Function to kill the TR
     function deleteThisItem(element) {
       console.log("deleteThisItem");
-      console.log(element);
 
       // first make sure we have at least 1 table element
 
       var parentTD = $(element).parent("td");
       var parentTR = $(parentTD).parent("tr");
+      var rowID = parentTR.attr("data-tr_course_section_id");
       var numberOfTableRows = getNumberOfTableRows();
+
+      console.log("deleting row with rowID: " + rowID);
 
       if (numberOfTableRows <= 1) {
         alert("The last table item cannot be deleted. Please modify this item instead of deleting it");
@@ -137,11 +171,23 @@
 
       if (confirm("Are you sure that you want to delete this element?")) {
         parentTR.remove();
+
+        // now delete the modal
+        var modalToRemove = $("#course_section_modal_"+rowID);
+        modalToRemove.remove();
       }
     }
 
     function getNumberOfTableRows() {
-      return $(tableID).children("tr").length;
+      return $(".tr_clone").length;
     }
   </script>
+
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+  $( function() {
+    $( "#sortable" ).sortable();
+    $( "#sortable" ).disableSelection();
+  } );
+</script>
 @endpush

@@ -54,6 +54,10 @@ class Question extends BaseModel
      * METHODS
      */
 
+    public function getThisTypeString() {
+        return static::getTypeString($this->type);
+    }
+
 
     /**
      * STATIC METHODS

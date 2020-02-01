@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Base\BaseModel;
 use Exception;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 class BaseBREADController extends Controller
@@ -23,7 +23,7 @@ class BaseBREADController extends Controller
     public function browse() {
         $modelName = $this->getModelName();
         $modelQuery = $modelName::query();
-        /** @var Model[] $models */
+        /** @var BaseModel[] $model */
         $models = $modelQuery->get();
 
         return view($this->templateDir . '.browse', compact("models", "controllerName"));
@@ -32,7 +32,7 @@ class BaseBREADController extends Controller
     public function read($id) {
         $modelName = $this->getModelName();
 
-        /** @var Model $model */
+        /** @var BaseModel $model */
         $model = $modelName::getById($id);
 
         return view($this->templateDir . '.read', compact("model", "controllerName"));
@@ -41,7 +41,7 @@ class BaseBREADController extends Controller
     public function add() {
         $modelName = $this->getModelName();
 
-        /** @var Model $model */
+        /** @var BaseModel $model */
         $model = new $modelName();
 
         return view($this->templateDir . '.modify', compact("model", "controllerName"));
@@ -50,7 +50,7 @@ class BaseBREADController extends Controller
     public function edit($id) {
         $modelName = $this->getModelName();
 
-        /** @var Model $model */
+        /** @var BaseModel $model */
         $model = $modelName::findOrFail($id);
         if (is_null($model)) {
             dump("Model cannot be found"); die;
@@ -65,14 +65,14 @@ class BaseBREADController extends Controller
         $modelName = $this->getModelName();
 
         if ($model_id && $model_id > 0) {
-            /** @var Model $model */
-            $model = $modelName::getById($model_id);
+            /** @var BaseModel $model */
+            $model = $modelName::getByID($model_id);
             if (is_null($model)) {
                 dump("Model cannot be found");
                 die;
             }
         } else {
-            /** @var Model $model */
+            /** @var BaseModel $model */
             $model = new $modelName();
         }
 
@@ -80,10 +80,10 @@ class BaseBREADController extends Controller
         $model->setValues($request->all());
 
         // Then verify
-        if ( !$model->validate($request->all()) ) {
-            $errors = $model->errors();
-            return view($this->templateDir . '.modify', compact("model", "controllerName", "errors"));
-        }
+        //if ( !$model->validate($request->all()) ) {
+        //    $errors = $model->errors();
+        //    return view($this->templateDir . '.modify', compact("model", "controllerName", "errors"));
+        //}
 
         // We've passed validation.. continue...
         $model->save();

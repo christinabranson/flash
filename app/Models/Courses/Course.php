@@ -17,7 +17,6 @@ class Course extends BaseModel
         'name',
         'description',
         'owner_id',
-        'split_into_sections',
     ];
 
     /**
@@ -27,6 +26,37 @@ class Course extends BaseModel
     /**
      * RELATIONSHIPS
      */
+
+    protected $childRelationships = [
+        "sections" => [                       // relationship function name $model->
+            "table" => "course_sections",
+            "attributes" => [
+                "id",
+                "name",
+                "description",
+                "displayorder",
+            ],
+            "rules" => [
+                'name' => 'required|max:255',
+                //'description' => '',
+            ],
+        ],
+        "questions" => [                       // relationship function name $model->
+            "table" => "question",
+            "attributes" => [
+                "id",
+                "course_id",
+                "section_id",
+                "question",
+                "type",
+                "correct_answer",
+            ],
+            "rules" => [
+                'question' => 'required|max:255',
+                //'description' => '',
+            ],
+        ],
+    ];
 
     public function sections() {
         return $this->hasMany('App\Models\Courses\CourseSection', 'course_id');

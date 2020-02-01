@@ -51,6 +51,10 @@
                             {{ $model->created_at->format('Y-m-d') }}
                           </td>
                           <td class="td-actions text-right">
+                            <a rel="tooltip" class="btn btn-success btn-link" href="{{ route('courses.view', $model) }}" data-original-title="" title="">
+                              <i class="material-icons">launch</i>
+                              <div class="ripple-container"></div>
+                            </a>
                               <a rel="tooltip" class="btn btn-success btn-link" href="{{ route('courses.edit', $model) }}" data-original-title="" title="">
                                 <i class="material-icons">edit</i>
                                 <div class="ripple-container"></div>

@@ -26,6 +26,8 @@ class CreateCourseSectionsTable extends Migration
 
             $table->string('name', 255);
             $table->mediumText('description')->nullable();
+
+            $table->integer('displayorder')->default(1);
         });
     }
 

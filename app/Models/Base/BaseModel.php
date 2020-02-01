@@ -2,6 +2,7 @@
 
 namespace App\Models\Base;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 
@@ -49,6 +50,10 @@ class BaseModel extends Model {
     private $saveChildren = true;
     protected $children = array();
     protected $extra = array();
+
+    protected $sortByColumn = null;
+    protected $sortByDirection = "asc";
+
 
     // ERRORS
     private $errors;
@@ -98,6 +103,44 @@ class BaseModel extends Model {
             $model->postDelete();
             return true;
         });
+    }
+
+    public static function getByID($id) {
+        /** @var BaseModel $staticModel */
+        $staticModel = new static();
+
+        /** @var Builder $query */
+        $query = $staticModel->newQuery();
+
+        $query->where("id", $id);
+
+        $model = $query->first();
+
+        return $model;
+    }
+
+    /**
+     * Overrides the default newQuery method
+     * This will automatically append the model's ordering
+     *
+     * @param bool $ordered
+     * @return Builder
+     */
+    public function newQuery() {
+        /** @var Builder $query */
+        $query = parent::newQuery();
+
+        if (isset($this->sortByColumn)) {
+            // otherwise use our default sorting
+            $direction = $this->sortByDirection ?: "asc";
+            if ($direction) {
+                $query->orderBy($this->table . "." . $this->sortByColumn, $direction);
+            } else {
+                $query->orderBy($this->table . "." . $this->sortByColumn);
+            }
+        }
+
+        return $query;
     }
 
     public function postSave() {
@@ -262,32 +305,35 @@ class BaseModel extends Model {
         foreach ($childAttributes as $attribute_group_name => $attribute_group_data) {
             $attribute_group_attributes = $attribute_group_data["attributes"];
             $exists_var = $attribute_group_name . "_exists_in_post";
-            $hasDisplayOrderAttribute = isset($attribute_group_attributes["displayorder"]);
-
+            $hasDisplayOrderAttribute = in_array("displayorder", $attribute_group_attributes);
 
             $this->children[$attribute_group_name] = array();
 
-            for ($i = 0; $i < count($data[$exists_var]); $i++) {
-                $dataRow = array();
-                foreach ($attribute_group_attributes as $attribute_group_attribute) {
-                    $attributeName = $attribute_group_name . "_" . $attribute_group_attribute;
+            if (!empty($data[$exists_var])) {
+                for ($i = 0; $i < count($data[$exists_var]); $i++) {
+                    if ($data[$exists_var][$i]) {
+                        $dataRow = array();
+                        foreach ($attribute_group_attributes as $attribute_group_attribute) {
+                            $attributeName = $attribute_group_name . "_" . $attribute_group_attribute;
 
-                    if (isset($data[$attributeName]) && isset($data[$attributeName][$i])) {
-                        $dataRow[$attribute_group_attribute] = $data[$attributeName][$i];
-                    } else {
-                        $dataRow[$attribute_group_attribute] = null;
+                            if (isset($data[$attributeName]) && isset($data[$attributeName][$i])) {
+                                $dataRow[$attribute_group_attribute] = $data[$attributeName][$i];
+                            } else {
+                                $dataRow[$attribute_group_attribute] = null;
+                            }
+                        }
+
+                        if (!isset($dataRow["id"])) {
+                            $dataRow["id"] = null;
+                        }
+
+                        if ($hasDisplayOrderAttribute) {
+                            $dataRow["displayorder"] = $i + 1;
+                        }
+
+                        $this->children[$attribute_group_name][] = (object)$dataRow;
                     }
                 }
-
-                if (!isset($dataRow["id"])) {
-                    $dataRow["id"] = null;
-                }
-
-                if ($hasDisplayOrderAttribute) {
-                    $dataRow["displayorder"] = $i + 1;
-                }
-
-                $this->children[$attribute_group_name][] = (object) $dataRow;
             }
         }
     }
@@ -301,25 +347,27 @@ class BaseModel extends Model {
             $exists_var = $attribute_group_name . "_exists";
             $rules = $attribute_group_data["rules"];
 
-            for ($i = 0; $i < count($data[$attribute_group_name][$exists_var]); $i++) {
-                $dataRow = array();
+            if (!empty($rules)) {
+                for ($i = 0; $i < count($data[$attribute_group_name][$exists_var]); $i++) {
+                    $dataRow = array();
 
-                foreach ($attribute_group_attributes as $attribute_group_attribute) {
-                    if (isset($data[$attribute_group_attribute]) && isset($data[$attribute_group_attribute][$i])) {
-                        $dataRow[$attribute_group_attribute] = $data[$attribute_group_attribute][$i];
-                    } else {
-                        $dataRow[$attribute_group_attribute] = null;
+                    foreach ($attribute_group_attributes as $attribute_group_attribute) {
+                        if (isset($data[$attribute_group_attribute]) && isset($data[$attribute_group_attribute][$i])) {
+                            $dataRow[$attribute_group_attribute] = $data[$attribute_group_attribute][$i];
+                        } else {
+                            $dataRow[$attribute_group_attribute] = null;
+                        }
                     }
-                }
 
-                // make a new validator object
-                $v = Validator::make($dataRow, $rules);
+                    // make a new validator object
+                    $v = Validator::make($dataRow, $rules);
 
-                // check for failure
-                if ($v->fails()) {
-                    // set errors and return false
-                    $this->errors = array_merge($this->errors, $v->errors());
-                    return false;
+                    // check for failure
+                    if ($v->fails()) {
+                        // set errors and return false
+                        $this->errors = array_merge($this->errors, $v->errors());
+                        return false;
+                    }
                 }
             }
         }
@@ -332,23 +380,28 @@ class BaseModel extends Model {
 
         $childAttributes = $this->childRelationships;
         foreach ($childAttributes as $attribute_group_name => $attribute_group_data) {
-            foreach ($this->getChildAttributes($attribute_group_name) as $childAttributeData) {
+            $tableName = $attribute_group_data["table"];
+            $idsToSave = [];
 
-                //dump($attribute_group_name);
-                $childAttributeData = (array) $childAttributeData;
-                //dump($childAttributeData);
+            $childAttributes = $this->getChildAttributes($attribute_group_name);
 
-                $id = $childAttributeData["id"] ?: 0;
+            if (!empty($childAttributes)) {
+                foreach ($childAttributes as $childAttributeData) {
 
-                /** @var BaseModel $childModel */
-                $childModel = $this->{$attribute_group_name}()->firstOrNew(["clients_to_payors.id" => $id]);
-                //dump("330");
-                //dump($childModel);
-                //die;
-                $childModel->fill($childAttributeData);
-                $childModel->save();
+                    $childAttributeData = (array)$childAttributeData;
 
-                //dump($childModel); die;
+                    $id = $childAttributeData["id"] ?: 0;
+
+                    /** @var BaseModel $childModel */
+                    $childModel = $this->{$attribute_group_name}()->firstOrNew(["id" => $id]);
+
+                    $childModel->fill($childAttributeData);
+                    $childModel->save();
+
+                    $idsToSave[] = $childModel->id;
+                }
+
+                $this->{$attribute_group_name}()->whereNotIn("id", $idsToSave)->delete();
             }
         }
     }

@@ -25,7 +25,6 @@ class CreateCoursesTable extends Migration
 
             $table->string('name', 255);
             $table->mediumText('description')->nullable();
-            $table->boolean('split_into_sections')->default(false);
         });
     }
 

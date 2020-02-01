@@ -6,21 +6,21 @@
         <th class="text-right">Actions</th>
     </tr>
     </thead>
-    <tbody>
-    @if(count($model->sections))
-        @foreach($model->sections as $section)
-            <tr data-course_section_id="{{ $section->id }}">
-                @include('courses.includes.course_section_modal', ['section' => $section])
-                <td>{{ $section->name }}</td>
-                <td>{{ $section->description }}</td>
+    <tbody id="sortable">
+    @php($sections = $model->getChildAttributes("sections"))
+    @if(count($sections))
+        @foreach($sections as $section)
+            <tr class="tr_clone" data-tr_course_section_id="{{ $section->id }}">
+                <td><span class="name">{{ $section->name }}</span></td>
+                <td><span class="description">{{ $section->description }}</span></td>
                 <td class="td-actions text-right">
-                    <button type="button" rel="tooltip" class="btn btn-info">
-                        <i class="material-icons">person</i>
-                    </button>
-                    <button type="button" rel="tooltip" class="btn btn-success">
+                    @include('courses.includes.course_sections_modal', ['section' => $section])
+
+
+                    <button type="button" rel="tooltip" class="btn btn-success btn-modal-open" data-toggle="modal" data-target="#course_section_modal_{{ $section->id }}">
                         <i class="material-icons">edit</i>
                     </button>
-                    <button type="button" rel="tooltip" class="btn btn-danger" onclick="deleteThisItem(this)">
+                    <button type="button" rel="tooltip" class="btn btn-danger btn-modal-open" onclick="deleteThisItem(this)">
                         <i class="material-icons">delete</i>
                     </button>
                 </td>
@@ -33,13 +33,17 @@
         @php($section->displayorder = 1)
         @php($section->name = "")
         @php($section->description = "")
-        <tr data-tr_course_section_id="{{ $section->id }}">
-            @include('courses.includes.course_sections_modal', ['section' => $section])
+        <tr class="tr_clone" data-tr_course_section_id="{{ $section->id }}">
             <td><span class="name">{{ $section->name }}</span></td>
-            <td><span class="description">{{ $section->description }}v</td>
+            <td><span class="description">{{ $section->description }}</span></td>
             <td class="td-actions text-right">
-                <button type="button" rel="tooltip" class="btn btn-success" data-toggle="modal" data-target="#course_section_modal_{{ $section->id }}">
+                @include('courses.includes.course_sections_modal', ['section' => $section])
+
+                <button type="button" rel="tooltip" class="btn btn-success btn-modal-open" data-toggle="modal" data-target="#course_section_modal_{{ $section->id }}">
                     <i class="material-icons">edit</i>
+                </button>
+                <button type="button" rel="tooltip" class="btn btn-danger btn-modal-open" onclick="deleteThisItem(this)">
+                    <i class="material-icons">delete</i>
                 </button>
             </td>
         </tr>

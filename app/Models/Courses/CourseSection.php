@@ -18,7 +18,10 @@ class CourseSection extends BaseModel
 
         'name',
         'description',
+        'displayorder',
     ];
+
+    protected $sortByColumn = 'displayorder';
 
     /**
      * VALIDATION
@@ -27,6 +30,25 @@ class CourseSection extends BaseModel
     /**
      * RELATIONSHIPS
      */
+
+
+    protected $childRelationships = [
+        "questions" => [                       // relationship function name $model->
+            "table" => "question",
+            "attributes" => [
+                "id",
+                "course_id",
+                "section_id",
+                "question",
+                "type",
+                "correct_answer",
+            ],
+            "rules" => [
+                'question' => 'required|max:255',
+                //'description' => '',
+            ],
+        ],
+    ];
 
     public function course() {
         return $this->belongsTo('App\Models\Courses\Course');

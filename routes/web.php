@@ -19,12 +19,17 @@ Auth::routes();
 // Admin Routes
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/manage/courses', 'CourseController@browse')->name('courses.browse');
-    Route::get('/manage/courses/view/{id}', 'CourseController@view', function ($id){return $id;})->name('courses.view');
+    Route::get('/manage/courses/view/{id}', 'CourseController@read', function ($id){return $id;})->name('courses.view');
     Route::get('/manage/courses/add', 'CourseController@add')->name('courses.add');
     Route::get('/manage/courses/edit/{id}', 'CourseController@edit', function ($id){return $id;})->name('courses.edit');
     Route::post('/manage/courses/save', 'CourseController@save')->name('courses.save');
     Route::get('/manage/courses/delete/{id}', 'CourseController@delete', function ($id){return $id;})->name('courses.delete');
     Route::post('/manage/courses/delete', 'CourseController@delete')->name('courses.delete_confirm');
+
+    // Section questions
+    Route::get('/manage/courses/section_questions/{id}', 'CourseController@manage_section_questions', function ($id){return $id;})->name('courses.manage_section_questions');
+    Route::get('/manage/courses/questions/{id}', 'CourseController@manage_questions', function ($id){return $id;})->name('courses.manage_course_questions');
+    Route::post('/manage/courses/questions_save', 'CourseController@save_questions')->name('courses.save_questions');
 });
 
 
