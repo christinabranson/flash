@@ -12,6 +12,6 @@ class CourseController extends BaseBREADController
      */
     protected $controllerName = "manage/courses";
     protected $templateDir = "courses";
-    protected $modelName = "App\Models\Course";
+    protected $modelName = "App\Models\Courses\Course";
 
 }

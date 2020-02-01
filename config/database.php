@@ -37,7 +37,8 @@ return [
 
         'sqlite' => [
             'driver' => 'sqlite',
-            'database' => '/Users/christina/Documents/websites/flash/storage/db.sqlite',
+            //'database' => '/Users/christina/Documents/websites/flash/storage/db.sqlite',
+            'database' => '../storage/db.sqlite',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
 
