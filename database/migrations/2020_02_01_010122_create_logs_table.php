@@ -14,34 +14,40 @@ class CreateLogsTable extends Migration
     public function up()
     {
         Schema::create('questions_log', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->increments('id');
             $table->timestamps();
 
             $table->integer('user_id')->unsigned();
+
+            $table->integer('question_id')->unsigned();
+
+            $table->integer('course_id')->unsigned();
+
+            $table->integer('section_id')->nullable()->unsigned();
+
+            $table->boolean('is_correct')->default(false);
+        });
+
+        Schema::table('questions_log', function (Blueprint $table) {
             $table->foreign('user_id')
                 ->references('id')
                 ->on('users')
                 ->onDelete('cascade');
 
-            $table->integer('question_id')->unsigned();
             $table->foreign('question_id')
                 ->references('id')
                 ->on('questions')
                 ->onDelete('cascade');
 
-            $table->integer('course_id')->unsigned();
             $table->foreign('course_id')
                 ->references('id')
                 ->on('courses')
                 ->onDelete('cascade');
 
-            $table->integer('section_id')->nullable()->unsigned();
             $table->foreign('section_id')
                 ->references('id')
                 ->on('course_sections')
                 ->onDelete('cascade');
-
-            $table->boolean('is_correct')->default(false);
         });
     }
 

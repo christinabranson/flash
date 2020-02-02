@@ -14,29 +14,37 @@ class CreateQuizSessionsTable extends Migration
     public function up()
     {
         Schema::create('quiz_sessions', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->increments('id');
             $table->timestamps();
 
             $table->integer('user_id')->unsigned();
+
+
+            $table->integer('course_id')->unsigned();
+
+
+            $table->integer('section_id')->nullable()->unsigned();
+
+
+            $table->text("sessionGUID")->nullable();
+            $table->integer("status")->default(1);
+        });
+
+        Schema::table('quiz_sessions', function (Blueprint $table) {
             $table->foreign('user_id')
                 ->references('id')
                 ->on('users')
                 ->onDelete('cascade');
 
-            $table->integer('course_id')->unsigned();
             $table->foreign('course_id')
                 ->references('id')
                 ->on('courses')
                 ->onDelete('cascade');
 
-            $table->integer('section_id')->nullable()->unsigned();
             $table->foreign('section_id')
                 ->references('id')
                 ->on('course_sections')
                 ->onDelete('cascade');
-
-            $table->text("sessionGUID")->nullable();
-            $table->integer("status")->default(1);
         });
     }
 

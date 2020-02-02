@@ -14,17 +14,20 @@ class CreateQuestionAnswersTable extends Migration
     public function up()
     {
         Schema::create('question_answers', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->increments('id');
             $table->timestamps();
 
             $table->integer('question_id')->unsigned();
+
+            $table->text("answer");
+            $table->boolean("is_correct")->default(false);
+        });
+
+        Schema::table('question_answers', function (Blueprint $table) {
             $table->foreign('question_id')
                 ->references('id')
                 ->on('questions')
                 ->onDelete('cascade');
-
-            $table->text("answer");
-            $table->boolean("is_correct")->default(false);
         });
     }
 

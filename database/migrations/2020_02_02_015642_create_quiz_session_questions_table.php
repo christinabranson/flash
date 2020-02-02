@@ -14,22 +14,25 @@ class CreateQuizSessionQuestionsTable extends Migration
     public function up()
     {
         Schema::create('quiz_session_questions', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->increments('id');
             $table->timestamps();
 
             $table->integer('session_id')->unsigned();
+
+            $table->integer('question_id')->unsigned();
+
+        });
+
+        Schema::table('quiz_session_questions', function (Blueprint $table) {
             $table->foreign('session_id')
                 ->references('id')
                 ->on('quiz_sessions')
                 ->onDelete('cascade');
 
-
-            $table->integer('question_id')->unsigned();
             $table->foreign('question_id')
                 ->references('id')
                 ->on('questions')
                 ->onDelete('cascade');
-
         });
     }
 

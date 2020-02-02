@@ -14,14 +14,11 @@ class CreateCourseSectionsTable extends Migration
     public function up()
     {
         Schema::create('course_sections', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->increments('id');
             $table->timestamps();
 
             $table->integer('course_id')->unsigned();
-            $table->foreign('course_id')
-                ->references('id')
-                ->on('courses')
-                ->onDelete('cascade');
+
 
 
             $table->string('name', 255);
@@ -29,7 +26,16 @@ class CreateCourseSectionsTable extends Migration
 
             $table->integer('displayorder')->default(1);
         });
+
+        Schema::table('course_sections', function (Blueprint $table) {
+            $table->foreign('course_id')
+                ->references('id')
+                ->on('courses')
+                ->onDelete('cascade');
+        });
     }
+
+
 
     /**
      * Reverse the migrations.

@@ -14,17 +14,20 @@ class CreateCoursesTable extends Migration
     public function up()
     {
         Schema::create('courses', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->increments('id');
             $table->timestamps();
 
             $table->integer('owner_id')->nullable()->unsigned();
+
+            $table->string('name', 255);
+            $table->mediumText('description')->nullable();
+        });
+
+        Schema::table('courses', function (Blueprint $table) {
             $table->foreign('owner_id')
                 ->references('id')
                 ->on('users')
                 ->onDelete('set null');
-
-            $table->string('name', 255);
-            $table->mediumText('description')->nullable();
         });
     }
 
