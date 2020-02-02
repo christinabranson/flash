@@ -7,9 +7,9 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
-                                <div>COURSE: {{ $quizSession->course->name }}</div>
-                                @if($quizSession->section_id)
-                                    <div>SECTION: {{ $quizSession->section->name }}</div>
+                                <div>COURSE: {{ $quizSession->course->name }}
+                                    @if($quizSession->section_id)
+                                    &mdash; SECTION: {{ $quizSession->section->name }}</div>
                                 @endif
                                 <div>SESSION ID: {{ $quizSession->sessionGUID }}</div>
                             </div>
@@ -22,6 +22,7 @@
                     <div class="card">
                         <div class="card-header card-header-info">
                             <h4 class="card-title">{{ $question->question }}</h4>
+                            <p class="category">{{ $numRemaining }} Questions Remaining</p>
                         </div>
                         <div class="card-body">
                             <form method="POST" action="{{ route('quiz.submit') }}">

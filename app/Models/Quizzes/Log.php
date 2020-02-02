@@ -34,11 +34,11 @@ class Log extends BaseModel
      */
 
     public function user() {
-        return $this->belongsTo('App\User', 'id', 'user_id');
+        return $this->hasOne('App\User', 'id', 'user_id');
     }
 
     public function session() {
-        return $this->belongsTo('App\Models\Quizzes\QuizSession', 'id', 'session_id');
+        return $this->hasOne('App\Models\Quizzes\QuizSession', 'id', 'session_id');
     }
 
     public function question() {
@@ -46,11 +46,11 @@ class Log extends BaseModel
     }
 
     public function course() {
-        return $this->belongsTo('App\Models\Courses\Course', 'id', 'course_id');
+        return $this->hasOne('App\Models\Courses\Course', 'id', 'course_id');
     }
 
     public function section() {
-        return $this->belongsTo('App\Models\Courses\CourseSection', 'id', 'section_id');
+        return $this->hasOne('App\Models\Courses\CourseSection', 'id', 'section_id');
     }
 
     /**

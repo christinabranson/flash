@@ -7,9 +7,9 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
-                                <div>COURSE: {{ $quizSession->course->name }}</div>
-                                @if($quizSession->section_id)
-                                    <div>SECTION: {{ $quizSession->section->name }}</div>
+                                <div>COURSE: {{ $quizSession->course->name }}
+                                    @if($quizSession->section_id)
+                                    &mdash; SECTION: {{ $quizSession->section->name }}</div>
                                 @endif
                                 <div>SESSION ID: {{ $quizSession->sessionGUID }}</div>
                             </div>
@@ -22,6 +22,7 @@
                     <div class="card">
                         <div class="card-header card-header-info">
                             <h4 class="card-title">{{ $question->question }}</h4>
+                            <p class="category">{{ $numRemaining }} Questions Remaining</p>
                         </div>
                         <div class="card-body">
                             <table class="table">
@@ -44,14 +45,12 @@
                             @if($hasMore)
                             <div class="float-right">
                                 <a type="button" rel="tooltip" class="btn btn-info btn-lg" href="{{ route("quiz.next_question", ["quiz_session_id" => $quizSession->sessionGUID]) }}">
-                                    <i class="material-icons">edit</i>
                                     Next Question
                                 </a>
                             </div>
                             @else
                                 <div class="float-right">
                                     <a type="button" rel="tooltip" class="btn btn-info btn-lg" href="{{ route("quiz.results", ["quiz_session_id" => $quizSession->sessionGUID]) }}">
-                                        <i class="material-icons">edit</i>
                                         View Results
                                     </a>
                                 </div>

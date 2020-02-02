@@ -56,7 +56,6 @@ class QuizController extends Controller
         /** @var QuizSession $quizSession */
         $quizSession = $user->sessions()->where("course_id", "=", $id)->whereNull("section_id")->where("status", "=", QuizSession::STATUS_IN_PROGRESS)->first();
         if (is_null($quizSession)) {
-            dump("creating one");
             $quizSession = $user->sessions()->create([
                 "course_id" => $id,
                 "sessionGUID" => (string) Str::uuid(),
@@ -67,10 +66,44 @@ class QuizController extends Controller
         return view('quizzes.start_course', compact("course", "questions", "quizSession"));
     }
 
-    // TODO: Add controller for starting section
+    public function take_course_section_quiz($id) {
+
+        $course_section = CourseSection::getByID($id);
+        if (is_null($course_section)) {
+            return redirect('home');
+        }
+
+        $questions = $course_section->questions()->get();
+        if (empty($questions)) {
+            return redirect('home');
+        }
+
+        /**
+         * Get existing quiz session or create a new one
+         */
+
+        /** @var User $user */
+        $user = auth()->user();
+
+        /** @var QuizSession $quizSession */
+        $quizSession = $user->sessions()->where("course_id", "=", $course_section->course_id)->where("section_id", "=", $course_section->id)->where("status", "=", QuizSession::STATUS_IN_PROGRESS)->first();
+        if (is_null($quizSession)) {
+            $quizSession = $user->sessions()->create([
+                "course_id" => $course_section->course_id,
+                "section_id" => $id,
+                "sessionGUID" => (string) Str::uuid(),
+                "status" =>  QuizSession::STATUS_IN_PROGRESS,
+            ]);
+        }
+
+        $course = $course_section->course;
+
+        return view('quizzes.start_course_section', compact("course_section", "course", "questions", "quizSession"));
+    }
 
     public function next_question(Request $request) {
         $session_guid = $request->quiz_session_id;
+        /** @var QuizSession $quizSession */
         $quizSession = QuizSession::query()->where("sessionGUID", "=", $session_guid)->first();
         if (empty($session_guid) || is_null($quizSession)) {
             /** @var User $user */
@@ -84,14 +117,15 @@ class QuizController extends Controller
             return redirect('home');
         }
 
-        $question = $this->getARemainingQuestion($quizSession);
+        $numRemaining = $quizSession->getNumberOfRemainingQuestions();
+        $question = $quizSession->getNextRandomQuestion();
         if (is_null($question)) {
             $quizSession->status = QuizSession::STATUS_COMPLETED;
             $quizSession->save();
             return redirect()->route("quiz.results", ["quiz_session_id" => $quizSession->sessionGUID]);
         }
 
-        return view('quizzes.question', compact("question", "quizSession"));
+        return view('quizzes.question', compact("question", "quizSession", "numRemaining"));
     }
 
 
@@ -100,7 +134,7 @@ class QuizController extends Controller
         $user = auth()->user();
 
         $session_guid = $request->quiz_session_id;
-        /** @var Question $quizSession */
+        /** @var QuizSession $quizSession */
         $quizSession = QuizSession::query()->where("sessionGUID", "=", $session_guid)->first();
 
         $question_id = $request->question_id;
@@ -143,8 +177,8 @@ class QuizController extends Controller
             "correct_answer_id" => $correct_answer_id,
         ]);
 
-        $question = $this->getARemainingQuestion($quizSession);
-        if (is_null($question)) {
+        $numRemaining = $quizSession->getNumberOfRemainingQuestions();
+        if ($numRemaining <= 0) {
             $quizSession->status = QuizSession::STATUS_COMPLETED;
             $quizSession->save();
             $hasMore = false;
@@ -153,7 +187,7 @@ class QuizController extends Controller
         }
 
 
-        return view('quizzes.result', compact("question", "quizSession", "log", "answer", "correct_answer", "correct_answer_text", "answer_text", "hasMore"));
+        return view('quizzes.result', compact("question", "quizSession", "log", "answer", "correct_answer", "correct_answer_text", "answer_text", "hasMore", "numRemaining"));
     }
 
     public function results(Request $request) {
@@ -166,36 +200,9 @@ class QuizController extends Controller
 
         $logs = $quizSession->logs()->get();
 
-        $totalCorrect = $logs->filter(function($log) {
-            return $log->is_correct;
-        })->count();
-        $totalIncorrect = count($logs) - $totalCorrect;
+        $totalCorrect = $quizSession->getNumberCorrect();
 
-        return view('quizzes.results', compact("logs", "quizSession", "totalCorrect", "totalIncorrect"));
-
-    }
-
-    private function getARemainingQuestion(QuizSession $quizSession) {
-        $completedQuestions = $quizSession->logs()->get()->pluck("question_id")->toArray();
-        if ($quizSession->section_id) {
-            /** @var CourseSection $section */
-            $section = $quizSession->section;
-            $allQuestions = $section->questions()->get()->pluck("id")->toArray();
-
-            $questionsAvailable = array_diff($allQuestions, $completedQuestions);
-
-            return $section->questions()->whereIn("id", $questionsAvailable)->orderByRand()->first();
-        } else {
-            /** @var Course $course */
-            $course = $quizSession->course;
-            $allQuestions = $course->questions()->get()->pluck("id")->toArray();
-
-            $questionsAvailable = array_diff($allQuestions, $completedQuestions);
-
-            return $course->questions()->whereIn("id", $questionsAvailable)->inRandomOrder()->first();
-        }
-
-        return null;
+        return view('quizzes.results', compact("logs", "quizSession", "totalCorrect"));
 
     }
 }

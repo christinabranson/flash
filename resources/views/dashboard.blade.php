@@ -11,7 +11,6 @@
             <div class="card-header card-header-info">
               <div class="float-right">
                 <a type="button" rel="tooltip" class="btn btn-warning btn-lg" href="{{ route("quiz.take_course_quiz", $course) }}">
-                  <i class="material-icons">edit</i>
                   Take Quiz On Course
                 </a>
               </div>
@@ -31,6 +30,7 @@
                         <thead>
                         <tr>
                           <th>Name</th>
+                          <th>Description</th>
                           <th>Questions</th>
                           <th class="text-right">Actions</th>
                         </tr>
@@ -40,12 +40,11 @@
                             @php($sectionQuestions = $section->questions()->count())
                             <tr class="tr_clone" data-tr_course_section_id="{{ $section->id }}">
                               <td><span class="name">{{ $section->name }}</span></td>
-                              <td><span class="description">{{ $section->questions()->count() }}</span></td>
+                              <td><span class="name">{{ $section->description }}</span></td>
+                              <td><span class="description">{{ $sectionQuestions }}</span></td>
                               <td class="td-actions text-right">
-
-                                <a type="button" rel="tooltip" class="btn btn-warning" href="{{ route("courses.manage_section_questions", $section) }}">
-                                  <i class="material-icons">edit</i>
-                                  Take Quiz On Section ({{ $sectionQuestions }} Questions)
+                                <a type="button" rel="tooltip" class="btn btn-warning btn-sm" href="{{ route("quiz.take_course_section_quiz", $section) }}">
+                                  Take Quiz On Section
                                 </a>
                               </td>
                             </tr>

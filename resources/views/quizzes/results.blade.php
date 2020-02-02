@@ -18,7 +18,7 @@
                 </div>
             </div>
             <div class="row justify-content-center">
-                <div class="col-md-8">
+                <div class="col-md-6">
                     <div class="card">
                         <div class="card-header card-header-info">
                             <h4 class="card-title">Results</h4>
@@ -53,19 +53,54 @@
                                 </tr>
                                 </tbody>
                             </table>
-
+                            <div class="float-right">
+                                <a type="button" rel="tooltip" class="btn btn-danger btn-lg" href="{{ route("quiz.take_course_quiz", $quizSession->course) }}">
+                                    Take Quiz Again
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="card card-stats">
+                        <div class="card-header card-header-danger card-header-icon">
+                            <div class="card-icon">
+                                <i class="material-icons">assessment</i>
+                            </div>
+                            <p class="card-category">Total Score</p>
+                            <h3 class="card-title">{{ $totalCorrect  }} / {{ count($logs) }}</h3>
+
+                            <p>
+                            <div class="ct-chart ct-perfect-fourth"></div>
+
+                            </p>
+                        </div>
+                        <div class="card-footer align-content-center">
+                            <div class="align-content-center">
+                                <a type="button" rel="tooltip" class="btn btn-danger btn-sm" href="{{ route("quiz.take_course_quiz", $quizSession->course) }}">
+                                    Take Quiz Again
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+
             </div>
         </div>
     </div>
 @endsection
 @push('js')
 <script>
-    $(document).ready(function() {
-        // Javascript method's body can be found in assets/js/demos.js
-        md.initDashboardPageCharts();
+    new Chartist.Pie('.ct-chart', {
+        series: [{{ $totalCorrect  }}, {{ count($logs) - $totalCorrect }}]
+    }, {
+        donut: true,
+        donutWidth: 60,
+        donutSolid: true,
+        startAngle: 270,
+        showLabel: true
     });
 </script>
 @endpush

@@ -39,6 +39,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/quiz/submit', 'QuizController@submit')->name('quiz.submit');
     Route::get('/quiz/results', 'QuizController@results')->name('quiz.results');
 
+    // Reporting & history
+    Route::get('/history', 'HistoryController@index')->name('history.index');
+
+
 });
 
 
