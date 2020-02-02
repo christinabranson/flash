@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Questions;
+namespace App\Models\Quizzes;
 
 use App\Models\Base\BaseModel;
 
@@ -15,10 +15,14 @@ class Log extends BaseModel
 
     protected $fillable = [
         'user_id',
+        'session_id',
         'question_id',
         'course_id',
         'section_id',
         'is_correct',
+        'provided_answer',
+        'correct_answer',
+        'correct_answer_id',
     ];
 
     /**
@@ -33,8 +37,12 @@ class Log extends BaseModel
         return $this->belongsTo('App\User', 'id', 'user_id');
     }
 
+    public function session() {
+        return $this->belongsTo('App\Models\Quizzes\QuizSession', 'id', 'session_id');
+    }
+
     public function question() {
-        return $this->belongsTo('App\Models\Questions\Question', 'id', 'question_id');
+        return $this->hasOne('App\Models\Questions\Question', 'id', 'question_id');
     }
 
     public function course() {

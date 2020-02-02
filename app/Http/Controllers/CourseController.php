@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Base\BaseModel;
 use App\Models\Courses\Course;
+use App\Models\Questions\Question;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
@@ -34,7 +35,9 @@ class CourseController extends BaseBREADController
             $section_id = $model->id;
         }
 
-        return view($this->templateDir . '.manage_questions', compact("model", "controllerName", "classType", "course_id", "section_id"));
+        $return_url = route('courses.view', $model);
+
+        return view($this->templateDir . '.manage_questions', compact("model", "controllerName", "classType", "course_id", "section_id", "return_url"));
     }
 
     public function manage_section_questions($id) {
@@ -55,8 +58,10 @@ class CourseController extends BaseBREADController
             $section_id = $model->id;
         }
 
+        $return_url = route('courses.view', $model->course);
 
-        return view($this->templateDir . '.manage_questions', compact("model", "controllerName", "classType", "course_id", "section_id"));
+
+        return view($this->templateDir . '.manage_questions', compact("model", "controllerName", "classType", "course_id", "section_id", "return_url"));
     }
 
     public function save_questions(Request $request) {
@@ -94,7 +99,40 @@ class CourseController extends BaseBREADController
         // We've passed validation.. continue...
         $model->save();
 
+        if ($request->return_url) {
+            return redirect($request->return_url);
+        }
+
         return redirect($this->controllerName);
     }
 
+    public function ajax_submit_question_for_id(Request $request) {
+
+        $course_id = (int) $request->course_id;
+        $section_id = (int) $request->section_id;
+        $question = $request->question;
+        $type = $request->type;
+        $correctAnswer = $request->correctAnswer ?: "";
+
+        if ($course_id > 0 && strlen(trim($question))) {
+
+            $model = Question::firstOrNew([
+                "course_id" => $course_id,
+                "question" => $question,
+            ]);
+
+            $model->correct_answer = $correctAnswer;
+            $model->type = $type;
+
+            if ($section_id > 0) {
+                $model->section_id = $section_id;
+            }
+
+            if ($model->save()) {
+                return response()->json(["was_created" => true, "id" => $model->id]);
+            }
+        }
+
+        return response()->json(["was_created" => false, "id" => null]);
+    }
 }

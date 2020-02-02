@@ -1,4 +1,4 @@
-<table id="answer_table_{{ $question->id }}" class="table">
+<table id="answer_table_{{ $question->id }}" class="table answers_table">
     <thead>
     <tr>
         <th>Answer</th>
@@ -60,4 +60,4 @@
     @endif
     </tbody>
 </table>
-<input type="button" onclick="addAnswersTableItem('#answer_table_{{ $question->id }}')" class="btn btn-sm btn-secondary" value="+ Add Item" />
+<input type="button" onclick="addAnswersTableItem('#answer_table_{{ $question->id }}')" class="btn btn-sm btn-secondary add_answers_to_table_button" value="+ Add Item" />

@@ -35,6 +35,11 @@ class BaseBREADController extends Controller
         /** @var BaseModel $model */
         $model = $modelName::getById($id);
 
+        if (is_null($model)) {
+            dump("Model cannot be found"); die;
+        }
+
+
         return view($this->templateDir . '.read', compact("model", "controllerName"));
     }
 

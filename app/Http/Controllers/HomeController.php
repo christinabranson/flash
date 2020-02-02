@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Courses\Course;
+
 class HomeController extends Controller
 {
     /**
@@ -21,6 +23,8 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('dashboard');
+        $courses = Course::query()->get();
+
+        return view('dashboard', compact("courses"));
     }
 }

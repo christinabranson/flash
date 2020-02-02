@@ -30,6 +30,15 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/manage/courses/section_questions/{id}', 'CourseController@manage_section_questions', function ($id){return $id;})->name('courses.manage_section_questions');
     Route::get('/manage/courses/questions/{id}', 'CourseController@manage_questions', function ($id){return $id;})->name('courses.manage_course_questions');
     Route::post('/manage/courses/questions_save', 'CourseController@save_questions')->name('courses.save_questions');
+    Route::post('/manage/courses/ajax_submit_question_for_id', 'CourseController@ajax_submit_question_for_id')->name('courses.ajax_submit_question_for_id');
+
+    // Take quiz
+    Route::get('/quiz/course/{id}', 'QuizController@take_course_quiz', function ($id){return $id;})->name('quiz.take_course_quiz');
+    Route::get('/quiz/section/{id}', 'QuizController@take_course_section_quiz', function ($id){return $id;})->name('quiz.take_course_section_quiz');
+    Route::get('/quiz/next', 'QuizController@next_question')->name('quiz.next_question');
+    Route::post('/quiz/submit', 'QuizController@submit')->name('quiz.submit');
+    Route::get('/quiz/results', 'QuizController@results')->name('quiz.results');
+
 });
 
 

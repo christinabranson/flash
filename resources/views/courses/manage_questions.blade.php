@@ -8,6 +8,7 @@
             @csrf
 
             <!-- HIDDEN VALUE FOR MODEL ID -->
+              <input name="return_url" type="hidden" value="{{$return_url}}">
               <input name="model_id" type="hidden" value="{{$model->id}}">
               <input name="model_type" type="hidden" value="{{$classType}}">
 
@@ -71,11 +72,13 @@
 <script>
 
   function cloneModalContentsToTable(modalButtonEl) {
+    console.log("cloneModalContentsToTable");
     var courseSectionID = modalButtonEl.data("question_id");
-    console.log(courseSectionID);
 
     var questionValue = $("#input-question-"+courseSectionID).val();
+    var typeValueInt = $("#input-type-"+courseSectionID + " option:selected").val();
     var typeValue = $("#input-type-"+courseSectionID + " option:selected").text();
+    var correctAnswer = $("#input-correct_answer-"+courseSectionID).val();
 
     console.log(questionValue);
     console.log(typeValue);
@@ -87,6 +90,43 @@
     // if name value exists, then say the field exists
     if (questionValue !== undefined && questionValue.length) {
       $("#input-exists-"+courseSectionID).val(1);
+    }
+
+    var questionID = $("#input-id-"+courseSectionID).val();
+    console.log("questionID: " + questionID);
+    if (questionID == 0) {
+      var parentModal = modalButtonEl.closest(".question_modal");
+      console.log(parentModal);
+      // now sent the modal data to the database via ajax to get an ID if we need an id
+
+      $.ajaxSetup({
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+      });
+
+      $.ajax({
+        type: "POST",
+        async: true,
+        data: {
+          course_id: '{{ $course_id }}',
+          section_id: '{{ $section_id }}',
+          question: questionValue,
+          type: typeValueInt,
+          correctAnswer: correctAnswer
+        },
+        url: "{{ route('courses.ajax_submit_question_for_id') }}",
+        success: function (data) {
+          console.log(data);
+          if (data.was_created && data.id) {
+            var newQuestionID = data.id;
+
+            // now I need to edit this everywhere
+            $("#input-id-"+courseSectionID).val(newQuestionID);
+            parentModal.find(".answers_table").find("input[name='answers_question_id[]']").val(newQuestionID);
+          }
+        }
+      });
     }
   }
 
@@ -132,6 +172,19 @@
     newModalElement.find("input[name=\"questions_correct_answer[]\"]").val(""); // clear the old values
     newModalElement.find("input[name=\"questions_exists_in_post[]\"]").val(0); // clear the old values
 
+    // Clear answers
+    newModalElement.find("input[name=\"answers_question_id[]\"]").val(0); // clear the old values
+    newModalElement.find("input[name=\"answers_id[]\"]").val(0); // clear the old values
+    newModalElement.find("input[name=\"answers_answer[]\"]").val(""); // clear the old values
+    newModalElement.find("input[name=\"answers_is_correct[]\"]").val(0); // clear the old values
+
+    // Remove any answer rows except for the first one
+    newModalElement.find(".answers_table").find(".tr_clone").not(':first').remove();
+
+    newModalElement.find(".answers_table").first().attr("id","answer_table_"+newIDNumber);
+    newModalElement.find(".add_answers_to_table_button").first().attr("onclick","addAnswersTableItem('#answer_table_"+newIDNumber+"')");
+
+
     newModalElement.find("input[name=\"questions_id[]\"]").attr("id", "input-id-"+newIDNumber);
     newModalElement.find("input[name=\"questions_exists_in_post[]\"]").attr("id", "input-exists-"+newIDNumber);
     newModalElement.find("input[name=\"questions_question[]\"]").attr("id", "input-question-"+newIDNumber);
@@ -141,6 +194,8 @@
     newModalElement.attr("id", "question_modal_"+newIDNumber);
     newModalElement.attr("data-modal_question_id", newIDNumber);
     newModalElement.find(".JS_modal_save").attr("data-question_id", newIDNumber);
+
+
 
     /**
      * On save, write the relevant values in the table
@@ -159,8 +214,9 @@
 
     var parentTD = $(element).parent("td");
     var parentTR = $(parentTD).parent("tr");
-    var parentTableBody = $(parentTR).parent("tbody");
-    var parentTable = $(parentTableBody).parent("table");
+    var parentTable = $(parentTD).closest("table");
+    //var parentTableBody = $(parentTR).parent("tbody");
+    //var parentTable = $(parentTableBody).parent("table");
     var parentTableID = "#" + $(parentTable).attr("id");
     var numberOfTableRows = getNumberOfTableRows(parentTableID);
     console.log(parentTableID);
@@ -188,8 +244,9 @@
    * NOW ADD FUNCTIONALITY TO HANDLE THE ANSWERS
    */
   function addAnswersTableItem(tableID) {
+    console.log("addAnswersTableItem");
     console.log(tableID);
-    var newIDNumber = getNumberOfTableRows(tableID) + 200000;
+    var newIDNumber = tableID + "answers" + getNumberOfTableRows(tableID) + 200000;
     console.log("new answers table ID with course number " + newIDNumber);
 
     // Clone the TR

@@ -7,7 +7,6 @@
     </tr>
     </thead>
     <tbody id="sortable">
-    @php($sections = $model->getChildAttributes("sections"))
     @if(count($sections))
         @foreach($sections as $section)
             <tr class="tr_clone" data-tr_course_section_id="{{ $section->id }}">

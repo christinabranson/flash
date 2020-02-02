@@ -37,18 +37,32 @@
                       <th>
                         {{ __('Creation date') }}
                       </th>
+                      <th>
+                        {{ __('Sections') }}
+                      </th>
+                      <th>
+                        {{ __('Questions') }}
+                      </th>
                       <th class="text-right">
                         {{ __('Actions') }}
                       </th>
                     </thead>
                     <tbody>
                       @foreach($models as $model)
+                        @php($questionsCount = count($model->getChildAttributes("questions")))
+                        @php($sectionsCount = count($model->getChildAttributes("sections")))
                         <tr>
                           <td>
                             {{ $model->name }}
                           </td>
                           <td>
-                            {{ $model->created_at->format('Y-m-d') }}
+                            {{ $model->created_at->toDateTimeString() }}
+                          </td>
+                          <td>
+                            {{ $sectionsCount }}
+                          </td>
+                          <td>
+                            {{ $questionsCount }}
                           </td>
                           <td class="td-actions text-right">
                             <a rel="tooltip" class="btn btn-success btn-link" href="{{ route('courses.view', $model) }}" data-original-title="" title="">

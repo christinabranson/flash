@@ -8,6 +8,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
+
+    /**
+     * PROPERTIES
+     */
+
+
     use Notifiable;
 
     /**
@@ -36,4 +42,24 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * RELATIONSHIPS
+     */
+
+    public function sessions() {
+        return $this->hasMany('App\Models\Quizzes\QuizSession', "user_id");
+    }
+
+    public function logs() {
+        return $this->hasMany('App\Models\Quizzes\Log', 'user_id');
+    }
+
+    /**
+     * METHODS
+     */
+
+    /**
+     * STATIC METHODS
+     */
 }

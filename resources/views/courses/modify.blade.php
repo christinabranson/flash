@@ -80,6 +80,7 @@
     var tableID = "#course_sections_table";
 
     function cloneModalContentsToTable(modalButtonEl) {
+      console.log("cloneModalContentsToTable");
       var courseSectionID = modalButtonEl.data("course_section_id");
       console.log(courseSectionID);
 
@@ -126,10 +127,9 @@
 
       // Clone the modal
 
-      var modalToClone = $(".course_section_modal").first();
-      var newModalElement = modalToClone.clone();
-
-      $(tableID).append(newModalElement);
+      //var modalToClone = $(".course_section_modal").first();
+      //var newModalElement = modalToClone.clone();
+      var newModalElement = newTRElement.find(".course_section_modal").first();
 
       // Clear all inputs
       newModalElement.find("input").val("");
@@ -140,6 +140,8 @@
 
       newModalElement.attr("id", "course_section_modal_"+newIDNumber);
       newModalElement.attr("data-modal_course_section_id", newIDNumber);
+      newModalElement.find("input[name=\"sections_exists_in_post[]\"]").attr("id", "input-exists-"+newIDNumber);
+
       newModalElement.find(".JS_modal_save").attr("data-course_section_id", newIDNumber);
 
       /**

@@ -72,27 +72,28 @@ class Question extends BaseModel
         $attribute_group_name = "answers";
 
         $this->children[$attribute_group_name] = array();
+        if (isset($data) && isset($data["answers_question_id"]) && !empty($data["answers_question_id"])) {
+            foreach ($data["answers_question_id"] as $i => $question_id) {
+                if ($question_id != $this->id) { // we only care about this question obviously
+                    continue;
+                }
 
-        foreach ($data["answers_question_id"] as $i => $question_id) {
-            if ($question_id != $this->id) { // we only care about this question obviously
-                continue;
+                $id = $data["answers_id"][$i] ?: null;
+                $answer = $data["answers_answer"][$i];
+                $is_correct = $data["answers_is_correct"][$i];
+
+                if (strlen(trim($answer))) {
+                    $this->children[$attribute_group_name][] = [
+                        "id" => $id,
+                        "answer" => $answer,
+                        "is_correct" => $is_correct,
+                    ];
+                }
             }
 
-            $id = $data["answers_id"][$i] ?: null;
-            $answer = $data["answers_answer"][$i];
-            $is_correct = $data["answers_is_correct"][$i];
-
-            if (strlen(trim($answer))) {
-                $this->children[$attribute_group_name][] = [
-                    "id" => $id,
-                    "answer" => $answer,
-                    "is_correct" => $is_correct,
-                ];
+            if (count($this->children[$attribute_group_name])) {
+                $this->saveAnswerValues($attribute_group_name);
             }
-        }
-
-        if (count($this->children[$attribute_group_name])) {
-            $this->saveAnswerValues($attribute_group_name);
         }
     }
 

@@ -2,6 +2,8 @@
 
 namespace App\Models\Base;
 
+use App\Models\Courses\CourseSection;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
@@ -283,12 +285,16 @@ class BaseModel extends Model {
         }
     }
 
-    public function getChildAttributes($name) {
+    public function getChildAttributes($name, $postOnly = false) {
         if (isset($this->children[$name])) {
             return $this->children[$name];
         }
 
-        return $this->{$name}()->get();
+        if (!$postOnly) {
+            return $this->{$name}()->get();
+        }
+
+        return null;
     }
 
     public function getExtraAttributes($name) {
@@ -312,13 +318,15 @@ class BaseModel extends Model {
         $childAttributes = $this->childRelationships;
 
         foreach ($childAttributes as $attribute_group_name => $attribute_group_data) {
+
             $attribute_group_attributes = $attribute_group_data["attributes"];
             $exists_var = $attribute_group_name . "_exists_in_post";
             $hasDisplayOrderAttribute = in_array("displayorder", $attribute_group_attributes);
 
-            $this->children[$attribute_group_name] = array();
-
             if (!empty($data[$exists_var])) {
+
+                $this->children[$attribute_group_name] = array();
+
                 for ($i = 0; $i < count($data[$exists_var]); $i++) {
                     if ($data[$exists_var][$i]) {
                         $dataRow = array();
@@ -328,7 +336,7 @@ class BaseModel extends Model {
                             if (isset($data[$attributeName]) && isset($data[$attributeName][$i])) {
                                 $dataRow[$attribute_group_attribute] = $data[$attributeName][$i];
                             } else {
-                                $dataRow[$attribute_group_attribute] = "";
+                                $dataRow[$attribute_group_attribute] = null;
                             }
                         }
 
@@ -387,31 +395,42 @@ class BaseModel extends Model {
             return;
         }
 
-        $childAttributes = $this->childRelationships;
-        foreach ($childAttributes as $attribute_group_name => $attribute_group_data) {
-            $tableName = $attribute_group_data["table"];
-            $idsToSave = [];
+        try {
+            $childAttributes = $this->childRelationships;
+            foreach ($childAttributes as $attribute_group_name => $attribute_group_data) {
+                $tableName = $attribute_group_data["table"];
+                $idsToSave = [];
 
-            $childAttributes = $this->getChildAttributes($attribute_group_name);
+                $childAttributesFromPost = $this->getChildAttributes($attribute_group_name, false);
 
-            if (!empty($childAttributes)) {
-                foreach ($childAttributes as $childAttributeData) {
+                if (!empty($childAttributesFromPost)) {
+                    foreach ($childAttributesFromPost as $childAttributeData) {
 
-                    $childAttributeData = (array)$childAttributeData;
+                        if ($childAttributeData instanceof BaseModel) {
+                            $childAttributeData = $childAttributeData->getValues();
+                        } else {
+                            $childAttributeData = (array)$childAttributeData;
+                        }
 
-                    $id = isset($childAttributeData["id"]) && $childAttributeData["id"] > 0 ? $childAttributeData["id"] : 0;
+                        $id = isset($childAttributeData["id"]) && $childAttributeData["id"] > 0 ? $childAttributeData["id"] : 0;
 
-                    /** @var BaseModel $childModel */
-                    $childModel = $this->{$attribute_group_name}()->firstOrNew(["id" => $id]);
+                        /** @var BaseModel $childModel */
+                        $childModel = $this->{$attribute_group_name}()->firstOrNew(["id" => $id]);
 
-                    $childModel->fill($childAttributeData);
-                    $childModel->save();
+                        $childModel->fill($childAttributeData);
+                        $childModel->save();
 
-                    $idsToSave[] = $childModel->id;
+                        $idsToSave[] = $childModel->id;
+                    }
+
+                    $this->{$attribute_group_name}()->whereNotIn("id", $idsToSave)->delete();
                 }
-
-                $this->{$attribute_group_name}()->whereNotIn("id", $idsToSave)->delete();
             }
+        } catch (Exception $e) {
+            dump($this->getValues());
+            dump($childAttributesFromPost);
+            dump($childAttributeData);
+            dump($e->getMessage()); die;
         }
     }
 

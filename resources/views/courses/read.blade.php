@@ -35,14 +35,27 @@
                   </div>
                 </div>
 
-                <div id="sections" class="row">
-                  <label class="col-sm-2 col-form-label">{{ __('Course Sections') }}</label>
+                @php($questionsCount = count($model->getChildAttributes("questions")))
+                <div id="questions" class="row">
+                  <label class="col-sm-2 col-form-label">{{ __('Course Questions') }}</label>
                   <div class="col-sm-7">
                     <div class="form-group">
-                      @include('courses.includes.course_sections_table_view', ['model' => $model])
+                      <a class="btn btn-sm btn-primary" href="{{ route('courses.manage_course_questions', $model) }}">Manage Course Questions ({{ $questionsCount }})</a>
                     </div>
                   </div>
                 </div>
+
+                @php($sections = $model->getChildAttributes("sections"))
+                  @if (count($sections))
+                  <div id="sections" class="row">
+                    <label class="col-sm-2 col-form-label">{{ __('Course Sections') }}</label>
+                    <div class="col-sm-7">
+                      <div class="form-group">
+                        @include('courses.includes.course_sections_table_view', ['model' => $model, 'sections' => $sections])
+                      </div>
+                    </div>
+                  </div>
+                @endif
 
               </div>
             </div>
